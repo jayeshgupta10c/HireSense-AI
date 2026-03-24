@@ -1,0 +1,15 @@
+node_modules
+frontend/node_modules
+backend/__pycache__
+backend/*.pyc
+.git
+.env
+frontend/.env
+backend/.env
+dist
+frontend/dist
+.vscode
+.idea
+*.log
+*.swp
+*.DS_Store

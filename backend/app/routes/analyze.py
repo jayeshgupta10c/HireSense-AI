@@ -11,21 +11,38 @@ from app.core.dependencies import SECRET_KEY, ALGORITHM
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
 @router.post("")
-async def analyze_resume(
+async def analyze_full(
     file: UploadFile = File(...),
-    job_description: str = Form(...),
+    job_description: str = Form("Data Scientist"),
     authorization: Optional[str] = Header(None)
 ):
-    contents = await file.read()
-    resume_text = extract_text_from_pdf(contents)
+    # 1. Validate File Type
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
-    if not resume_text:
-        return {"error": "Could not extract text from PDF. Please use a text-based PDF (not scanned image)."}
+    try:
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
-    # Run actual ML Match instead of mock values
-    result = engine.match(resume_text, job_description)
-    if "error" in result:
-        return {"error": result["error"]}
+        # 2. Extract Text with Fallback
+        resume_text = extract_text_from_pdf(contents)
+        if not resume_text or len(resume_text) < 20:
+            raise HTTPException(
+                status_code=400, 
+                detail="Could not extract enough text from the PDF. Please ensure it is not an image-only PDF or encrypted."
+            )
+
+        # 3. Match using Engine
+        result = engine.match(resume_text, job_description)
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Analysis Failure: {e}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
     # Result mapping
     result["id"] = "anlyz_" + str(random.randint(1000, 9999))

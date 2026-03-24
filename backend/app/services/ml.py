@@ -13,18 +13,28 @@ DATASET_PATH = os.path.join(BASE_DIR, "dataset.csv")
 
 def load_dataset():
     try:
-        # Check if file exists
-        if not os.path.exists(DATASET_PATH):
-             print(f"CRITICAL: Dataset file NOT FOUND at {DATASET_PATH}")
-             return pd.DataFrame()
+        # Resolve absolute paths for multiple environments (Local, Docker, etc)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        possible_paths = [
+            os.path.join(os.getcwd(), "dataset.csv"),
+            os.path.join(os.path.dirname(os.path.dirname(current_dir)), "dataset.csv"), # Root from app/services
+            os.path.join(os.path.dirname(current_dir), "dataset.csv"), # Parent
+            "/app/dataset.csv", # Docker standard
+            "dataset.csv"
+        ]
 
-        df = pd.read_csv(DATASET_PATH)
-        df.columns = [c.strip() for c in df.columns]
-        print(f"Dataset loaded from {DATASET_PATH}: {len(df)} records")
-        return df
+        for path in possible_paths:
+            if os.path.exists(path):
+                df = pd.read_csv(path)
+                df.columns = [c.strip() for c in df.columns]
+                print(f"RESILIENCE: Dataset found and loaded from {path}")
+                return df
+
+        print("CRITICAL: Dataset file NOT FOUND in any known location.")
+        return pd.DataFrame(columns=['Resume', 'Skills', 'Job_Role'])
     except Exception as e:
-        print(f"Error loading dataset: {e}")
-        return pd.DataFrame()
+        print(f"CRITICAL: Dataset load failure: {e}")
+        return pd.DataFrame(columns=['Resume', 'Skills', 'Job_Role'])
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     try:
