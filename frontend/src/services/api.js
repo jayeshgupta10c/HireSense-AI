@@ -1,5 +1,5 @@
 import axios from 'axios';
-const api = axios.create({ baseURL: 'http://localhost:8000' });
+const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000' });
 export const analyzeResume = async (file, jd) => {
   const f = new FormData(); f.append('file', file); f.append('job_description', jd);
   const r = await api.post('/analyze', f); return r.data;
