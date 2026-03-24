@@ -12,7 +12,11 @@ Ensure you have [Docker](https://www.docker.com/get-started) and [Docker Compose
     cd HireSense-AI
     ```
 2.  **Environment Variables**:
-    Create a `.env` in the root (or backend/frontend folders) with your keys (Groq, MongoDB, etc).
+    Create a `.env` in the root (or backend/frontend folders) with your keys (Groq, MongoDB, etc). Example:
+    - `MONGO_URI` = *(Paste your exact MongoDB string from Phase 1)*
+    - `JWT_SECRET` = `hiresense_production_secure_key_2026` *(Make this a long random string)*
+    - `JWT_ALGORITHM` = `HS256`
+    - `PYTHON_VERSION` = `3.10.13`
 3.  **Launch**:
     ```bash
     docker-compose up --build
