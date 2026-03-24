@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-navy-950 text-white selection:bg-brand-accent selection:text-white font-sans;
+  }
+}
+
+@layer components {
+  .brutal-card {
+    @apply bg-navy-900 border-3 border-navy-800 rounded-none shadow-brutal transition-all;
+  }
+  
+  .brutal-card-hover {
+    @apply hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)];
+  }
+
+  .brutal-btn-primary {
+    @apply bg-brand-primary text-white font-black uppercase italic px-8 py-4 border-3 border-black shadow-brutal-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3;
+  }
+
+  .brutal-btn-accent {
+    @apply bg-brand-accent text-navy-950 font-black uppercase italic px-8 py-4 border-3 border-black shadow-brutal-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3;
+  }
+
+  .brutal-input {
+    @apply bg-navy-950 border-3 border-navy-800 p-6 font-bold text-white placeholder:text-navy-800 outline-none focus:border-brand-primary transition-colors;
+  }
+
+  .brutal-tag-green {
+    @apply px-4 py-2 bg-brand-accent/10 text-brand-accent border-2 border-brand-accent font-black uppercase text-[10px] tracking-widest;
+  }
+
+  .brutal-tag-red {
+    @apply px-4 py-2 bg-brand-red/10 text-brand-red border-2 border-brand-red font-black uppercase text-[10px] tracking-widest;
+  }
+
+  .brutal-sticker-yellow {
+    @apply bg-brand-yellow text-navy-950 px-4 py-1 font-black italic border-2 border-black -rotate-3 uppercase text-xs;
+  }
+}
+
+/* Custom Scrollbar for Dark Mode */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0f1b;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+

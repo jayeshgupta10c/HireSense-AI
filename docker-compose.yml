@@ -3,38 +3,35 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:latest
-    container_name: hiresense-db
+    container_name: hiresense_db
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db
-    restart: unless-stopped
+      - mongodb_data:/data/db
 
   backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: hiresense-api
+    build: ./backend
+    container_name: hiresense_backend
     ports:
       - "8000:8000"
     environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - JWT_SECRET=super_secret_hiresente_2026_key
+      - MONGO_URI=mongodb://mongodb:27017/hiresense
+      - JWT_SECRET=your_jwt_secret_here
       - JWT_ALGORITHM=HS256
     depends_on:
       - mongodb
-    restart: unless-stopped
+    volumes:
+      - ./dataset.csv:/app/dataset.csv
 
   frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: hiresense-web
+    build: ./frontend
+    container_name: hiresense_frontend
     ports:
-      - "80:80"
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
     depends_on:
       - backend
-    restart: unless-stopped
 
 volumes:
-  mongo_data:
+  mongodb_data:
