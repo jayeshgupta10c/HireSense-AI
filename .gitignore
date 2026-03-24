@@ -1,0 +1,51 @@
+# --- Python Section ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.pytest_cache/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.mypy_cache/
+
+# --- Node Section ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm/
+.eslintcache
+.stylelintcache
+.vite-inspect
+.vercel
+
+# --- HireSense Specific ---
+frontend/dist/
+frontend/.env
+backend/.env
+backend/app/data/*.pkl
+backend/app/data/*.csv
+
+# --- System & IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
