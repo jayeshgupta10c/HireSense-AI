@@ -100,18 +100,30 @@ class MatchingEngine:
         matched = list(dict.fromkeys(matched))[:12]
         missing = [s for s in missing if s not in matched][:12]
 
-        ats_score = min(raw_score + random.uniform(5, 18), 98)
-        rank      = max(round(100 - raw_score, 1), 0.1)
+        # HYBRID SCORING LOGIC:
+        # We blend the TF-IDF raw_score with the actual skill-match density.
+        skill_match_ratio = len(matched) / len(all_skills) if all_skills else 0
+        
+        # Weighted Score: 30% TF-IDF, 70% Skill Presence
+        hybrid_score = (raw_score * 0.3) + (skill_match_ratio * 100 * 0.7)
+        
+        # Force high scores for 100% skill match
+        if skill_match_ratio >= 0.95:
+             hybrid_score = max(hybrid_score, 92 + random.uniform(0, 5))
+        
+        # ATS Score refinement
+        ats_score = min(hybrid_score + random.uniform(2, 8), 99)
+        rank      = max(round(100 - hybrid_score, 1), 0.1)
         role      = str(best_row.get(self._role_col, "Software Professional"))
 
         summary = (
-            f"YOUR RESUME SHOWS A {round(raw_score, 2)}% MATCH FOR THE {role.upper()} ROLE. "
+            f"YOUR RESUME SHOWS A {round(hybrid_score, 2)}% MATCH FOR THE {role.upper()} ROLE. "
             f"{'YOU HAVE STRENGTHS IN ' + ', '.join(matched[:3]).upper() + '.' if matched else 'NO DIRECT SKILL MATCHES FOUND.'} "
             f"{'FOCUS ON IMPROVING ' + ', '.join(missing[:3]).upper() + '.' if missing else ''}"
         ).strip()
 
         return {
-            "score":    round(raw_score, 2),
+            "score":    round(hybrid_score, 2),
             "ats_score":round(ats_score,  2),
             "rank":     rank,
             "role":     role,
