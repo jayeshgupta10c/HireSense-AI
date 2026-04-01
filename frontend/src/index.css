@@ -4,41 +4,44 @@
 
 @layer base {
   body {
-    @apply bg-navy-950 text-white selection:bg-brand-accent selection:text-white font-sans;
+    @apply bg-navy-950 text-white selection:bg-brand-primary selection:text-white font-sans antialiased;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
   }
 }
 
 @layer components {
+  .premium-glass {
+    @apply bg-brand-glass border border-white/10 backdrop-blur-md;
+  }
+
   .brutal-card {
-    @apply bg-navy-900 border-3 border-navy-800 rounded-none shadow-brutal transition-all;
+    @apply bg-navy-900 border-2 border-navy-800 rounded-xl shadow-premium transition-all duration-300;
   }
   
   .brutal-card-hover {
-    @apply hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)];
+    @apply hover:border-brand-primary/50 hover:shadow-neon hover:-translate-y-1;
   }
 
   .brutal-btn-primary {
-    @apply bg-brand-primary text-white font-black uppercase italic px-8 py-4 border-3 border-black shadow-brutal-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3;
+    @apply bg-brand-primary text-white font-black uppercase tracking-wider px-8 py-4 border-2 border-transparent shadow-lg hover:bg-blue-600 hover:shadow-blue-500/20 transition-all flex items-center justify-center gap-3 active:scale-95;
   }
 
   .brutal-btn-accent {
-    @apply bg-brand-accent text-navy-950 font-black uppercase italic px-8 py-4 border-3 border-black shadow-brutal-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3;
+    @apply bg-brand-accent text-navy-950 font-black uppercase tracking-wider px-8 py-4 border-2 border-transparent shadow-lg hover:bg-emerald-500 hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-3 active:scale-95;
   }
 
   .brutal-input {
-    @apply bg-navy-950 border-3 border-navy-800 p-6 font-bold text-white placeholder:text-navy-800 outline-none focus:border-brand-primary transition-colors;
+    @apply bg-navy-900 border-2 border-navy-800 p-6 rounded-xl font-bold text-white placeholder:text-navy-700 outline-none focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all;
   }
 
-  .brutal-tag-green {
-    @apply px-4 py-2 bg-brand-accent/10 text-brand-accent border-2 border-brand-accent font-black uppercase text-[10px] tracking-widest;
+  .premium-tag {
+    @apply px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-navy-300;
   }
 
-  .brutal-tag-red {
-    @apply px-4 py-2 bg-brand-red/10 text-brand-red border-2 border-brand-red font-black uppercase text-[10px] tracking-widest;
-  }
-
-  .brutal-sticker-yellow {
-    @apply bg-brand-yellow text-navy-950 px-4 py-1 font-black italic border-2 border-black -rotate-3 uppercase text-xs;
+  .glow-text {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
 }
 

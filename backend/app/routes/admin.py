@@ -73,3 +73,17 @@ async def compare_resumes(req: CompareRequest, admin: dict = Depends(get_admin_u
         "winner": winner,
         "all_candidates": candidates
     }
+
+@router.delete("/resumes/{resume_id}")
+async def delete_resume(resume_id: str, admin: dict = Depends(get_admin_user)):
+    """Permanently delete a resume analysis record from the database."""
+    try:
+        oid = ObjectId(resume_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid Resume Registry ID.")
+        
+    result = await mongodb.db.analysis_results.delete_one({"_id": oid})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Artifact not found in registry.")
+        
+    return {"status": "SUCCESS", "message": f"Artifact {resume_id} has been purged."}

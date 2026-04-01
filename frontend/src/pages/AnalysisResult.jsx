@@ -3,40 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   FileText, X, Zap, GraduationCap, Activity, PlayCircle, BookOpen,
   ChevronRight, Loader2, CheckCircle, TrendingUp, Star, ArrowRight,
-  Sparkles, BarChart2, Copy, Download, RotateCcw
+  Sparkles, BarChart2, Copy, Download, RotateCcw, LayoutDashboard, Brain, Info,
+  AlertCircle, Target, ShieldCheck, Rocket
 } from 'lucide-react';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import {
   generateCoverLetter, generateGrowthPlan,
   generateCareerPivotPlan, generateQuizQuestions
 } from '../services/groq';
 
-/* ── Design tokens (exact from screenshots) ── */
-const BG     = '#0d1421';
-const CARD   = '#111c2d';
-const BORDER = '#1e3050';
-const TEAL   = '#00d9b5';
-const BLUE   = '#4a9eff';
-const RED    = '#e53935';
-const YELLOW = '#fbbf24';
-const DIM    = '#94a3b8';
-const MUTED  = '#4a6080';
-
-/* ────────────────────────── HELPERS ────────────────────────── */
-const Card = ({ children, style = {}, className = '' }) => (
-  <div style={{ background: CARD, border: `2px solid ${BORDER}`, ...style }} className={`overflow-hidden ${className}`}>
-    {children}
-  </div>
-);
-const CardHeader = ({ icon, label, accentColor }) => (
-  <div style={{ borderBottom: `2px solid ${BORDER}`, borderTop: accentColor ? `4px solid ${accentColor}` : undefined }} className="flex items-center gap-3 px-5 py-4">
-    <span style={{ color: accentColor ?? BLUE }}>{icon}</span>
-    <span className="font-black italic uppercase tracking-tighter text-white text-base">{label}</span>
-  </div>
-);
-
 /* ────────────────────────── QUIZ MODAL ────────────────────────── */
-function QuizModal({ skill, role, onClose }) {
+function QuizModal({ skill, onClose }) {
   const [questions, setQ] = useState([]);
   const [loading, setL]   = useState(true);
   const [error, setE]     = useState('');
@@ -48,7 +25,7 @@ function QuizModal({ skill, role, onClose }) {
   useEffect(() => {
     setL(true); setE('');
     generateQuizQuestions(skill).then(q => {
-      if (!q || q.length === 0) { setE('Failed to generate questions. Check Groq API key.'); setL(false); return; }
+      if (!q || q.length === 0) { setE('Failed to generate questions.'); setL(false); return; }
       setQ(q); setL(false);
     }).catch(() => { setE('Network error.'); setL(false); });
   }, [skill]);
@@ -63,71 +40,51 @@ function QuizModal({ skill, role, onClose }) {
     }, 1000);
   };
 
-  const reset = () => { setIdx(0); setScore(0); setSel(null); setDone(false); setL(true); generateQuizQuestions(skill).then(q => { setQ(q); setL(false); }); };
-
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)' }}>
-      <Card style={{ border: `3px solid ${BLUE}`, boxShadow: `10px 10px 0 ${BLUE}`, width: '100%', maxWidth: 560 }}>
-        <div style={{ borderBottom: `2px solid ${BORDER}` }} className="flex items-center justify-between px-6 py-4">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-navy-950/90 backdrop-blur-xl">
+      <div className="brutal-card w-full max-w-xl overflow-hidden shadow-neon border-brand-primary/30">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-navy-800 bg-navy-900">
           <div>
-            <div style={{ color: BLUE }} className="font-black italic uppercase tracking-tighter text-lg">{skill} — AI QUIZ</div>
-            <div style={{ color: MUTED }} className="text-[9px] font-black uppercase tracking-[0.4em]">Powered by llama3-8b-8192</div>
+            <div className="font-black uppercase text-brand-primary tracking-tighter text-lg">{skill} Quiz</div>
+            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-navy-500">Validation Protocol Engine</div>
           </div>
-          <button onClick={onClose} style={{ background: RED }} className="w-9 h-9 flex items-center justify-center border-2 border-black"><X size={16} className="text-white" /></button>
+          <button onClick={onClose} className="p-2 bg-brand-red rounded-lg text-white hover:scale-110 transition-transform"><X size={16} /></button>
         </div>
 
-        <div className="p-6">
-          {loading && (
-            <div className="flex flex-col items-center py-16 gap-4">
-              <Loader2 size={44} style={{ color: BLUE }} className="animate-spin" />
-              <p style={{ color: MUTED }} className="font-black italic uppercase text-sm tracking-widest animate-pulse">Generating with Llama 3...</p>
+        <div className="p-8">
+          {loading ? (
+            <div className="flex flex-col items-center py-20 gap-4">
+              <Loader2 size={48} className="text-brand-primary animate-spin" />
+              <p className="text-navy-400 font-bold uppercase tracking-widest text-xs animate-pulse">Syncing with LLM...</p>
             </div>
-          )}
-          {!loading && error && (
-            <div className="text-center py-10 space-y-4">
-              <p style={{ color: RED }} className="font-black italic uppercase">{error}</p>
-              <button onClick={reset} style={{ background: BLUE }} className="px-8 py-3 text-white font-black italic uppercase border-2 border-black"><RotateCcw size={16} className="inline mr-2" />Retry</button>
+          ) : error ? (
+            <div className="text-center py-10 text-brand-red font-bold uppercase underline underline-offset-8 italic">{error}</div>
+          ) : done ? (
+            <div className="text-center py-12">
+              <div className="text-brand-accent text-8xl font-black mb-4 italic glow-text">{Math.round((score / questions.length) * 100)}%</div>
+              <div className="text-white font-black uppercase text-2xl mb-8 italic">Efficiency: {score}/{questions.length}</div>
+              <button onClick={onClose} className="brutal-btn-primary w-full rounded-xl py-4">Finish Protocol</button>
             </div>
-          )}
-          {!loading && !error && done && (
-            <div className="text-center py-10">
-              <div style={{ color: TEAL }} className="text-8xl font-black italic mb-3">{Math.round((score / questions.length) * 100)}<span className="text-4xl">%</span></div>
-              <div className="text-white font-black italic uppercase text-xl mb-2">{score} / {questions.length} correct</div>
-              <div style={{ color: DIM }} className="font-bold uppercase tracking-widest text-xs mb-8">Quiz Complete</div>
-              <div className="flex gap-3 justify-center">
-                <button onClick={reset} style={{ background: CARD, border: `2px solid ${BORDER}`, boxShadow: `4px 4px 0 ${BORDER}` }} className="px-8 py-3 text-white font-black italic uppercase text-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-2"><RotateCcw size={14} /> Retry</button>
-                <button onClick={onClose} style={{ background: TEAL, border: `2px solid black`, boxShadow: `4px 4px 0 black` }} className="px-8 py-3 text-black font-black italic uppercase text-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">Done</button>
-              </div>
-            </div>
-          )}
-          {!loading && !error && !done && questions.length > 0 && (
+          ) : (
             <>
-              {/* Progress */}
-              <div className="flex items-center gap-4 mb-6">
-                <span style={{ color: MUTED }} className="text-[9px] font-black uppercase tracking-widest shrink-0">Q{idx + 1}/{questions.length}</span>
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: BORDER }}>
-                  <div style={{ width: `${(idx / questions.length) * 100}%`, background: BLUE }} className="h-full transition-all duration-500" />
-                </div>
-                <span style={{ color: BLUE }} className="text-[9px] font-black uppercase tracking-widest shrink-0">{score} PTS</span>
+              <div className="mb-8 p-4 bg-navy-950 rounded-xl border border-navy-800 shadow-inner">
+                <p className="text-white text-xl font-black italic tracking-tight leading-snug">"{questions[idx]?.q}"</p>
               </div>
-              {/* Question */}
-              <p className="text-white text-xl font-black italic uppercase tracking-tighter leading-snug mb-6">"{questions[idx]?.q}"</p>
-              {/* Options */}
               <div className="space-y-3">
                 {questions[idx]?.options.map((opt, i) => {
+                  const revealed = sel !== null;
                   const isCorrect = i === questions[idx].answer;
                   const isSelected = i === sel;
-                  const revealed = sel !== null;
                   return (
                     <button key={i} onClick={() => pick(i)}
-                      style={{
-                        background: !revealed ? BG : isCorrect ? `${TEAL}18` : isSelected ? `${RED}18` : BG,
-                        border: `2px solid ${!revealed ? BORDER : isCorrect ? TEAL : isSelected ? RED : BORDER}`,
-                        color: !revealed ? 'white' : isCorrect ? TEAL : isSelected ? RED : DIM
-                      }}
-                      className="w-full p-4 text-left font-black uppercase text-xs tracking-tighter flex items-center justify-between transition-all hover:border-[#4a9eff] cursor-pointer">
+                      className={`w-full p-5 rounded-xl text-left font-black uppercase text-xs tracking-tight transition-all flex items-center justify-between border-2 ${
+                        !revealed ? 'bg-navy-900 border-navy-800 hover:border-brand-primary text-navy-300' :
+                        isCorrect ? 'bg-brand-accent/10 border-brand-accent text-brand-accent shadow-[0_0_20px_rgba(16,185,129,0.1)]' :
+                        isSelected ? 'bg-brand-red/10 border-brand-red text-brand-red' : 'bg-navy-950 border-navy-800 text-navy-600'
+                      }`}
+                    >
                       <span>{opt}</span>
-                      {revealed && isCorrect && <CheckCircle size={16} />}
+                      {revealed && isCorrect && <CheckCircle size={18} />}
                     </button>
                   );
                 })}
@@ -135,18 +92,17 @@ function QuizModal({ skill, role, onClose }) {
             </>
           )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
 
 /* ────────────────────────── COVER LETTER MODAL ────────────────────────── */
 function CoverLetterModal({ data, onClose }) {
-  const [text, setText]   = useState('');
-  const [loading, setL]   = useState(true);
+  const [text, setText] = useState('');
+  const [loading, setL] = useState(true);
 
   useEffect(() => {
-    setL(true);
     generateCoverLetter({
       role: data.role, matchedSkills: data.skills.match,
       missingSkills: data.skills.missing, score: data.score
@@ -154,89 +110,36 @@ function CoverLetterModal({ data, onClose }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)' }}>
-      <Card style={{ border: `3px solid ${TEAL}`, boxShadow: `10px 10px 0 ${TEAL}`, width: '100%', maxWidth: 600 }}>
-        <div style={{ borderBottom: `2px solid ${BORDER}` }} className="flex items-center justify-between px-6 py-4">
-          <div>
-            <div style={{ color: TEAL }} className="font-black italic uppercase tracking-tighter text-lg">AI Cover Letter</div>
-            <div style={{ color: MUTED }} className="text-[9px] font-black uppercase tracking-[0.4em]">Powered by llama3-8b-8192</div>
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-xl">
+      <div className="brutal-card w-full max-w-2xl bg-navy-900 border-brand-accent/30 shadow-2xl">
+        <div className="px-8 py-6 border-b border-navy-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Sparkles className="text-brand-accent" size={24} />
+            <h3 className="text-xl font-black uppercase text-white tracking-widest italic">AI Narrative Engine</h3>
           </div>
-          <button onClick={onClose} style={{ background: RED }} className="w-9 h-9 flex items-center justify-center border-2 border-black"><X size={16} className="text-white" /></button>
+          <button onClick={onClose} className="p-2 rounded-lg bg-navy-800 text-navy-400 hover:text-white transition-colors"><X size={20} /></button>
         </div>
-        <div className="p-6">
+        <div className="p-8">
           {loading ? (
-            <div className="flex flex-col items-center py-16 gap-4">
-              <Sparkles size={44} style={{ color: TEAL }} className="animate-pulse" />
-              <div style={{ color: MUTED }} className="font-black italic uppercase text-sm tracking-widest animate-pulse">Drafting with Llama 3...</div>
-            </div>
+             <div className="flex flex-col items-center py-20 animate-pulse">
+                <Brain size={64} className="text-brand-accent mb-6" />
+                <div className="text-brand-accent font-black uppercase text-xs tracking-[0.5em]">Synthesizing Pitch...</div>
+             </div>
           ) : (
-            <>
-              <div style={{ background: BG, border: `2px solid ${BORDER}` }} className="p-5 h-64 overflow-y-auto text-sm font-bold leading-relaxed" style2={{ color: DIM }}>
-                {text.split('\n').map((line, i) => <p key={i} style={{ color: DIM }} className="mb-2">{line}</p>)}
-              </div>
-              <div className="flex gap-3 mt-5">
-                <button onClick={() => navigator.clipboard.writeText(text)}
-                  style={{ background: BLUE, border: `2px solid black`, boxShadow: `4px 4px 0 black` }}
-                  className="flex-1 py-3 text-white font-black italic uppercase text-xs flex items-center justify-center gap-2 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-                  <Copy size={14} /> Copy
-                </button>
-                <button onClick={onClose}
-                  style={{ background: CARD, border: `2px solid ${BORDER}` }}
-                  className="flex-1 py-3 font-black italic uppercase text-xs flex items-center justify-center gap-2 text-white">
-                  Close
-                </button>
-              </div>
-            </>
+             <div className="space-y-6">
+                <div className="bg-navy-950 p-6 rounded-2xl border border-navy-800 max-h-[400px] overflow-y-auto text-navy-300 text-sm font-medium leading-relaxed font-sans">
+                  {text.split('\n').map((l, i) => <p key={i} className="mb-4">{l}</p>)}
+                </div>
+                <div className="flex gap-4">
+                  <button onClick={() => navigator.clipboard.writeText(text)} className="brutal-btn-primary flex-1 rounded-xl py-4 group">
+                    <Copy size={18} /> Copy Dossier
+                  </button>
+                  <button onClick={onClose} className="flex-1 py-4 bg-navy-800 hover:bg-navy-700 text-white font-black uppercase text-xs rounded-xl transition-all">Dismiss</button>
+                </div>
+             </div>
           )}
         </div>
-      </Card>
-    </div>
-  );
-}
-
-/* ────────────────────────── PIVOT MODAL ────────────────────────── */
-function PivotModal({ role, currentSkills, onClose }) {
-  const [plan, setPlan] = useState(null);
-  const [loading, setL] = useState(true);
-  useEffect(() => { generateCareerPivotPlan(role, currentSkills).then(p => { setPlan(p); setL(false); }); }, [role]);
-
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)' }}>
-      <Card style={{ border: `3px solid ${YELLOW}`, boxShadow: `10px 10px 0 ${YELLOW}`, width: '100%', maxWidth: 560 }}>
-        <div style={{ borderBottom: `2px solid ${BORDER}` }} className="flex items-center justify-between px-6 py-4">
-          <div style={{ color: YELLOW }} className="font-black italic uppercase tracking-tighter text-lg">{role} — Pivot Plan</div>
-          <button onClick={onClose} style={{ background: RED }} className="w-9 h-9 flex items-center justify-center border-2 border-black"><X size={16} className="text-white" /></button>
-        </div>
-        <div className="p-6">
-          {loading ? (
-            <div className="flex flex-col items-center py-16 gap-4">
-              <TrendingUp size={44} style={{ color: YELLOW }} className="animate-bounce" />
-              <p style={{ color: MUTED }} className="font-black italic uppercase text-sm tracking-widest animate-pulse">Strategizing...</p>
-            </div>
-          ) : (
-            <div className="space-y-5">
-              <p className="text-white font-black italic uppercase text-base leading-snug tracking-tight">{plan?.summary}</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div style={{ background: BG, border: `2px solid ${BORDER}` }} className="p-4">
-                  <div style={{ color: YELLOW }} className="text-[9px] font-black uppercase tracking-widest mb-3">Key Skills</div>
-                  {plan?.keySkills?.map(s => <div key={s} style={{ color: DIM }} className="flex items-center gap-1.5 text-xs font-bold mb-1.5"><ChevronRight size={11} style={{ color: YELLOW }} />{s}</div>)}
-                </div>
-                <div style={{ background: BG, border: `2px solid ${BORDER}` }} className="p-4 space-y-4">
-                  <div>
-                    <div style={{ color: YELLOW }} className="text-[9px] font-black uppercase tracking-widest mb-1">Timeline</div>
-                    <div className="text-white text-3xl font-black italic">{plan?.timeline}</div>
-                  </div>
-                  <div>
-                    <div style={{ color: TEAL }} className="text-[9px] font-black uppercase tracking-widest mb-1">First Step</div>
-                    <div style={{ color: DIM }} className="text-xs font-bold leading-relaxed">{plan?.firstStep}</div>
-                  </div>
-                </div>
-              </div>
-              <button onClick={onClose} style={{ background: YELLOW, border: `2px solid black`, boxShadow: `4px 4px 0 black` }} className="w-full py-4 text-black font-black italic uppercase hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">Got It — Close</button>
-            </div>
-          )}
-        </div>
-      </Card>
+      </div>
     </div>
   );
 }
@@ -247,7 +150,11 @@ function GrowthCard({ skill, role, onQuiz }) {
   const [loading, setL]     = useState(false);
   const [expanded, setExp]  = useState(false);
 
-  const loadPlan = async () => {
+  const loadPlan = async (e) => {
+    // Prevent double fire if clicking buttons inside the expanded area
+    if (e.target.closest('button') && !e.target.closest('.toggle-btn')) return;
+    if (e.target.closest('a')) return;
+
     if (plan) { setExp(e => !e); return; }
     setL(true);
     const p = await generateGrowthPlan(skill, role);
@@ -255,303 +162,356 @@ function GrowthCard({ skill, role, onQuiz }) {
   };
 
   return (
-    <div style={{ background: BG, border: `2px solid ${BORDER}` }} className="transition-colors hover:border-[#4a9eff44]">
-      {/* Header row */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+    <div 
+      className={`bg-navy-950/50 border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${expanded ? 'border-brand-primary ring-1 ring-brand-primary/20' : 'border-navy-800 hover:border-brand-primary/40'}`}
+      onClick={loadPlan}
+    >
+      <div className="p-4 flex items-center justify-between">
         <div>
-          <div className="text-white font-black italic uppercase tracking-tighter">{skill}</div>
-          <span style={{ background: YELLOW }} className="text-black px-2 py-0.5 text-[7px] font-black uppercase inline-block mt-1">General Learning</span>
+          <div className="text-white font-black uppercase tracking-tight italic text-sm">{skill}</div>
+          <div className="text-brand-yellow font-black uppercase text-[7px] tracking-widest mt-0.5">Critical Skill Gap</div>
         </div>
-        <button onClick={loadPlan} style={{ color: MUTED }} className="shrink-0 hover:text-white transition-colors">
-          {loading ? <Loader2 size={15} className="animate-spin" /> : <ChevronRight size={15} className={`transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`} />}
-        </button>
+        <div className="text-navy-500 toggle-btn">
+           {loading ? <Loader2 size={16} className="animate-spin" /> : <ChevronRight size={18} className={`transition-transform duration-300 ${expanded ? 'rotate-90' : ''}`} />}
+        </div>
       </div>
 
-      {/* Expanded Plan */}
       {expanded && plan && (
-        <div style={{ borderTop: `1px solid ${BORDER}` }} className="px-4 py-3 space-y-2">
-          <p style={{ color: DIM }} className="text-[10px] font-bold uppercase tracking-wider">{plan.description}</p>
-          {plan.steps?.map((s, i) => (
-            <div key={i} style={{ color: DIM }} className="flex gap-2 text-[10px] font-bold">
-              <span style={{ color: BLUE }} className="shrink-0 font-black">{i + 1}.</span>{s}
-            </div>
-          ))}
-          <div className="flex gap-2 flex-wrap pt-1">
-            {plan.resources?.map(r => (
-              <a key={r.title} href={r.url} target="_blank" rel="noreferrer"
-                style={{ background: CARD, color: TEAL, border: `1px solid ${TEAL}44` }}
-                className="flex items-center gap-1 px-2 py-1 text-[8px] font-black uppercase tracking-widest hover:opacity-80">
-                <BookOpen size={8} />{r.title}
-              </a>
-            ))}
+        <div className="px-4 pb-4 space-y-3 border-t border-navy-800 bg-navy-900/30 animate-in fade-in slide-in-from-top-2">
+          <p className="text-navy-400 text-[10px] font-bold mt-3 leading-relaxed uppercase">{plan.description}</p>
+          <div className="space-y-2 pt-2">
+            <button onClick={() => onQuiz(skill)} className="w-full bg-brand-primary rounded-lg py-2 text-white font-black uppercase text-[10px] tracking-widest italic hover:shadow-neon transition-all flex items-center justify-center gap-2">
+               <Zap size={10} className="fill-white" /> VALIDATE SKILL
+            </button>
+            <a 
+              href={`https://www.coursera.org/search?query=${encodeURIComponent(skill)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full border border-navy-800 hover:border-white/20 rounded-lg py-2 text-navy-400 hover:text-white font-black uppercase text-[10px] tracking-widest italic transition-all flex items-center justify-center gap-2"
+            >
+               <BookOpen size={10} /> VIEW RECOMMENDED TRAINING
+            </a>
           </div>
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Action Buttons */}
-      <div style={{ borderTop: `2px solid ${BORDER}` }} className="flex">
-        <button onClick={() => onQuiz(skill)}
-          style={{ background: BLUE, borderRight: `2px solid ${BORDER}` }}
-          className="flex-1 py-2.5 text-white font-black italic uppercase text-[8px] tracking-widest flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
-          <PlayCircle size={11} /> START AI QUIZ
-        </button>
-        <button onClick={loadPlan} style={{ background: 'white' }}
-          className="flex-1 py-2.5 text-black font-black italic uppercase text-[8px] tracking-widest flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors">
-          <BookOpen size={11} />{expanded ? 'HIDE PLAN' : 'VIEW COURSE'}
-        </button>
+/* ────────────────────────── PIVOT MODAL ────────────────────────── */
+function PivotModal({ pivot, currentSkills, onClose }) {
+  const [plan, setPlan] = useState(null);
+  const [loading, setL] = useState(true);
+
+  useEffect(() => {
+    generateCareerPivotPlan(pivot, currentSkills).then(p => { setPlan(p); setL(false); });
+  }, [pivot]);
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-navy-950/90 backdrop-blur-xl">
+      <div className="brutal-card w-full max-w-xl bg-navy-900 border-brand-yellow/30 shadow-2xl relative">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-navy-800 bg-navy-900">
+          <div className="flex items-center gap-3">
+             <Rocket className="text-brand-yellow" size={24} />
+             <div>
+                <h3 className="text-white font-black uppercase text-lg tracking-tighter italic">{pivot} Protocol</h3>
+                <div className="text-[8px] font-black uppercase tracking-[0.4em] text-navy-500">Cross-Domain Intelligence Analysis</div>
+             </div>
+          </div>
+          <button onClick={onClose} className="p-2 bg-brand-red rounded-lg text-white hover:scale-110 transition-transform"><X size={16} /></button>
+        </div>
+
+        <div className="p-8">
+          {loading ? (
+            <div className="flex flex-col items-center py-20 gap-4">
+              <Loader2 size={48} className="text-brand-yellow animate-spin" />
+              <p className="text-navy-400 font-bold uppercase tracking-widest text-xs animate-pulse">Running Simulation...</p>
+            </div>
+          ) : (
+             <div className="space-y-6">
+                <div className="p-6 bg-navy-950 rounded-2xl border border-navy-800 shadow-inner">
+                   <p className="text-white text-xl font-black italic tracking-tight leading-snug">"{plan?.summary}"</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="bg-navy-950/50 p-4 rounded-xl border border-navy-800">
+                      <div className="text-brand-yellow font-black uppercase text-[8px] tracking-widest mb-2">TARGET SKILLS</div>
+                      <div className="flex flex-wrap gap-2">
+                         {plan?.keySkills?.map((s, i) => <span key={i} className="text-white text-[10px] font-black uppercase italic bg-navy-900 px-2 py-1 rounded-md">{s}</span>)}
+                      </div>
+                   </div>
+                   <div className="bg-navy-950/50 p-4 rounded-xl border border-navy-800 flex flex-col justify-center">
+                      <div className="text-brand-yellow font-black uppercase text-[8px] tracking-widest mb-1">TIMELINE</div>
+                      <div className="text-white font-black text-xl italic">{plan?.timeline}</div>
+                   </div>
+                </div>
+
+                <div className="p-4 bg-brand-yellow/5 border border-brand-yellow/20 rounded-xl">
+                   <div className="text-brand-yellow font-black uppercase text-[8px] tracking-widest mb-1 italic">INITIAL STRIKE (FIRST STEP)</div>
+                   <div className="text-white font-black text-xs uppercase tracking-tight italic">{plan?.firstStep}</div>
+                </div>
+
+                <div className="flex gap-4">
+                   <a 
+                     href={`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(pivot)}`}
+                     target="_blank" rel="noopener noreferrer"
+                     className="flex-1 brutal-btn-primary flex items-center justify-center gap-2 rounded-xl py-4 bg-brand-primary text-xs"
+                   >
+                      <Target size={18} /> TRACE TO JOBS
+                   </a>
+                   <a 
+                     href={`https://www.coursera.org/search?query=${encodeURIComponent(pivot)}`}
+                     target="_blank" rel="noopener noreferrer"
+                     className="flex-1 py-4 bg-navy-800 hover:bg-navy-700 text-white font-black uppercase text-xs rounded-xl transition-all flex items-center justify-center gap-2 border border-navy-700"
+                   >
+                      <BookOpen size={18} /> LEARNING PATHWAY
+                   </a>
+                </div>
+             </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-/* ────────────────────────── DEFAULT DATA ────────────────────────── */
-const DEMO = {
-  id: 'demo', score: 38.59, ats_score: 75, rank: 100.0, role: 'Software Engineer',
-  summary: 'YOUR RESUME SHOWS A 38.59% MATCH FOR THIS ROLE. STRENGTHS IN POSTMAN, DATA STRUCTURES, GITHUB. IMPROVE JENKINS, NODE.JS, KUBERNETES.',
-  skills: {
-    match:   ['POSTMAN', 'DATA STRUCTURES', 'GITHUB', 'GIT', 'SQL', 'JAVASCRIPT', 'ALGORITHMS', 'JAVA'],
-    missing: ['JENKINS', 'NODE.JS', 'KUBERNETES', 'LINUX', 'MAVEN', 'ECLIPSE', 'SPRING BOOT', 'DOCKER', 'JIRA']
-  },
-  pivots: ['DATA SCIENTIST', 'SOFTWARE ENGINEER', 'BUSINESS ANALYST', 'DEVOPS ENGINEER', 'CLOUD ARCHITECT']
-};
-
 /* ────────────────────────── MAIN PAGE ────────────────────────── */
 export default function AnalysisResult() {
-  const { id }   = useParams();
   const navigate = useNavigate();
-
-  const [data, setData]           = useState(null);
-  const [loading, setLoading]     = useState(true);
+  const [data, setData] = useState(null);
   const [quizSkill, setQuizSkill] = useState(null);
-  const [pivotRole, setPivotRole] = useState(null);
   const [showCover, setShowCover] = useState(false);
+  const [selectedPivot, setSelectedPivot] = useState(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('last_analysis');
-      if (saved) {
-        const p = JSON.parse(saved);
-        setData({ ...DEMO, ...p, pivots: DEMO.pivots });
-      } else { setData(DEMO); }
-    } catch { setData(DEMO); }
-    setLoading(false);
-  }, [id]);
-
-  /* ── Radar data: shows YOUR SKILLS vs MISSING SKILLS side by side ── */
-  const buildRadarData = useCallback((d) => {
-    if (!d) return [];
-    // Show top-8 matched + top-8 missing as a unified radar
-    const all = [
-      ...d.skills.match.slice(0, 8).map(s  => ({ trait: s, YOU: 80 + Math.floor(Math.random() * 15), REQ: 90 })),
-      ...d.skills.missing.slice(0, 8).map(s => ({ trait: s, YOU: 10 + Math.floor(Math.random() * 20), REQ: 90 }))
-    ];
-    return all;
+    const saved = localStorage.getItem('last_analysis');
+    if (saved) {
+      setData(JSON.parse(saved));
+    } else {
+      navigate('/dashboard');
+    }
   }, []);
 
-  // Stable radar data (only computed once per data load)
-  const [radarData, setRadarData] = useState([]);
-  useEffect(() => { if (data) setRadarData(buildRadarData(data)); }, [data]);
-
-  if (loading || !data) return (
-    <div style={{ background: BG }} className="fixed inset-0 flex flex-col items-center justify-center gap-6">
-      <Activity size={56} style={{ color: BLUE }} className="animate-pulse" />
-      <p style={{ color: TEAL }} className="font-black italic uppercase text-2xl tracking-widest animate-pulse">SYNCHRONIZING ANALYSIS...</p>
+  if (!data || !data.skills) return (
+    <div className="min-h-screen fixed inset-0 flex flex-col items-center justify-center bg-navy-950">
+       <div className="p-8 brutal-card bg-navy-900 border-brand-red/30 flex flex-col items-center gap-6">
+          <AlertCircle size={48} className="text-brand-red animate-pulse" />
+          <div className="text-center">
+            <h2 className="text-white font-black uppercase text-xl mb-2">Protocol Failure</h2>
+            <p className="text-navy-400 text-[10px] font-black uppercase tracking-widest">Analysis record is corrupted or missing core telemetry.</p>
+          </div>
+          <button onClick={() => navigate('/dashboard')} className="brutal-btn-primary rounded-xl px-12 py-4">Re-Initialize</button>
+       </div>
     </div>
   );
 
+  const matchedSkills = data.skills?.match || [];
+  const missingSkills = data.skills?.missing || [];
+
+  const radarData = [
+    ...(matchedSkills.slice(0, 6).map(s => ({ subject: s, A: 85 + Math.random()*10, B: 90 }))),
+    ...(missingSkills.slice(0, 6).map(s => ({ subject: s, A: 10 + Math.random()*20, B: 90 })))
+  ];
+
+  // Default values for robustness
+  const score = Math.round(data.score || 0);
+  const atsScore = Math.round(data.ats_score || 0);
+  const rank = data.rank || 50;
+  const atsDetails = data.ats_details || { score: 0, found_sections: [], word_count: 0, contact_info: {} };
+
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* ── Modals ── */}
-      {quizSkill && <QuizModal  skill={quizSkill}  role={data.role} onClose={() => setQuizSkill(null)} />}
-      {pivotRole && <PivotModal role={pivotRole}   currentSkills={data.skills.match} onClose={() => setPivotRole(null)} />}
+    <div className="min-h-screen pt-24 pb-20 px-6 bg-navy-950 overflow-x-hidden">
+      
+      {/* Modals */}
+      {quizSkill && <QuizModal skill={quizSkill} onClose={() => setQuizSkill(null)} />}
       {showCover && <CoverLetterModal data={data} onClose={() => setShowCover(false)} />}
+      {selectedPivot && <PivotModal pivot={selectedPivot} currentSkills={matchedSkills} onClose={() => setSelectedPivot(null)} />}
 
-      <div style={{ maxWidth: 1600 }} className="mx-auto p-4 grid grid-cols-12 gap-4">
-
-        {/* ══════════════ COL 1: INPUT DATA (3) ══════════════ */}
-        <div className="col-span-12 lg:col-span-3">
-          <Card>
-            <CardHeader icon={<FileText size={17} />} label="Input Data" />
-            <div className="p-5 space-y-5">
-
-              {/* Upload Zone */}
-              <div style={{ border: `3px dashed ${TEAL}66`, background: BG }} className="p-8 flex flex-col items-center justify-center relative">
-                <button onClick={() => { localStorage.removeItem('last_analysis'); navigate('/dashboard'); }} style={{ background: RED, boxShadow: `3px 3px 0 black` }} className="absolute -top-3.5 -right-3.5 w-8 h-8 flex items-center justify-center border-2 border-black z-10 hover:scale-110 transition-transform">
-                  <X size={14} className="text-white" />
-                </button>
-                <FileText size={44} style={{ color: TEAL }} className="mb-3" />
-                <span style={{ color: TEAL }} className="text-[10px] font-black tracking-widest uppercase break-all text-center">{data.filename || 'RESUME_ANALYSIS.PDF'}</span>
+      <div className="max-w-[1600px] mx-auto grid grid-cols-12 gap-6 pb-20 px-6 mt-10">
+        
+        {/* COLUMN 1: INTELLIGENCE SIDEBAR (LEFT) */}
+        <div className="col-span-12 lg:col-span-3 space-y-6">
+           {/* CANDIDATE INTELLIGENCE MATRIX */}
+           <div className="brutal-card p-6 bg-navy-900 border-navy-800">
+              <div className="flex items-center gap-3 mb-6">
+                 <FileText className="text-brand-primary" size={18} />
+                 <h2 className="text-xs font-black uppercase tracking-widest text-white">CANDIDATE INTELLIGENCE</h2>
               </div>
-
-              {/* JD */}
-              <div>
-                <div style={{ color: MUTED }} className="text-[8px] font-black uppercase tracking-[0.4em] mb-2">Job Description</div>
-                <div style={{ background: BG, border: `2px solid ${BORDER}`, color: DIM, maxHeight: 120, overflowY: 'auto' }} className="p-3 text-xs font-bold leading-relaxed whitespace-pre-wrap">
-                  {data.job_description || data.role}
-                </div>
+              <div className="flex flex-col items-center p-6 bg-navy-950 rounded-2xl border border-navy-800 text-center">
+                 <div className="p-4 bg-brand-primary/5 rounded-2xl mb-4 border border-brand-primary/10">
+                    <FileText size={42} className="text-brand-primary" />
+                 </div>
+                 <div className="text-white font-black uppercase text-sm mb-1 truncate w-full">{data.filename || 'DOCUMENT.pdf'}</div>
+                 <div className="text-navy-500 font-bold text-[8px] uppercase tracking-widest">Protocol: {data.role}</div>
               </div>
+           </div>
 
-              {/* Button */}
-              <button onClick={() => navigate('/dashboard')}
-                style={{ background: BLUE, boxShadow: `4px 4px 0 black`, border: `2px solid black` }}
-                className="w-full py-4 text-white font-black italic uppercase tracking-tighter flex items-center justify-center gap-3 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-base">
-                RUN ANALYSIS <ArrowRight size={20} />
-              </button>
-
-              {/* Reset Button */}
-              <button
-                onClick={() => {
-                  localStorage.removeItem('last_analysis');
-                  navigate('/dashboard');
-                }}
-                style={{ border: `2px solid ${BORDER}`, color: RED }}
-                className="w-full py-3 bg-transparent font-black italic uppercase tracking-tighter flex items-center justify-center gap-3 hover:bg-[#e5393518] transition-all text-sm">
-                <RotateCcw size={16} /> RESET ENTRIES
-              </button>
-            </div>
-          </Card>
-        </div>
-
-
-        {/* ══════════════ COL 2: CENTER (6) ══════════════ */}
-        <div className="col-span-12 lg:col-span-6 space-y-4">
-
-          {/* Score Cards */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Match Score */}
-            <Card>
-              <div style={{ height: 4, background: TEAL }} />
-              <div className="flex flex-col items-center p-6">
-                <div style={{ color: MUTED }} className="text-[8px] font-black uppercase tracking-[0.4em] mb-4">Match Score</div>
-                <div style={{ color: TEAL }} className="text-[72px] font-black italic leading-none mb-5">{data.score}<span className="text-3xl">%</span></div>
-                <div style={{ background: YELLOW, border: `2px solid black`, boxShadow: `3px 3px 0 black` }} className="flex items-center gap-2 px-4 py-1.5 -rotate-2 text-[10px] font-black italic uppercase text-black">
-                  <Star size={10} className="fill-black" /> RANK&nbsp;<span className="text-sm">TOP {data.rank}%</span>
-                </div>
+           {/* ATS AUDIT LOG */}
+           <div className="brutal-card p-6 bg-navy-900 border-navy-800">
+              <div className="flex items-center gap-3 mb-6">
+                 <ShieldCheck className="text-brand-accent" size={18} />
+                 <h2 className="text-xs font-black uppercase tracking-widest text-white">ATS AUDIT LOG</h2>
               </div>
-            </Card>
-
-            {/* ATS Friendly */}
-            <Card>
-              <div style={{ height: 4, background: BLUE }} />
-              <div className="flex flex-col items-center p-6">
-                <div style={{ color: MUTED }} className="text-[8px] font-black uppercase tracking-[0.4em] mb-4">ATS Friendly</div>
-                <div style={{ color: BLUE }} className="text-[72px] font-black italic leading-none mb-5">{data.ats_score}<span className="text-3xl">%</span></div>
-                <div style={{ background: BG, border: `2px solid ${BORDER}`, boxShadow: `3px 3px 0 black` }} className="flex items-center gap-2 px-5 py-2">
-                  <FileText size={14} style={{ color: BLUE }} />
-                  <span style={{ color: BLUE }} className="font-black tracking-wider text-[10px]">GRADE A+</span>
-                </div>
+              <div className="space-y-3">
+                 {[
+                   { label: 'Formatting', val: atsDetails.score > 50 ? 'Compliant' : 'Warning', c: 'text-brand-accent' },
+                   { label: 'Word Matrix', val: atsDetails.word_count + ' Str', c: 'text-brand-yellow' },
+                   { label: 'Section Logic', val: (atsDetails.found_sections?.length || 0) + '/7', c: 'text-brand-primary' },
+                   { label: 'Identity Link', val: atsDetails.contact_info?.email ? 'Verified' : 'Missing', c: atsDetails.contact_info?.email ? 'text-brand-accent' : 'text-brand-red' }
+                 ].map((item, i) => (
+                   <div key={i} className="flex items-center justify-between p-3 bg-navy-950 rounded-xl border border-navy-800/50">
+                      <span className="text-[8px] font-black uppercase text-navy-600 tracking-widest">{item.label}</span>
+                      <span className={`text-[10px] font-black uppercase italic ${item.c}`}>{item.val}</span>
+                   </div>
+                 ))}
               </div>
-            </Card>
-          </div>
+           </div>
 
-          {/* AI Intelligence + Cover Letter */}
-          <Card style={{ borderLeft: `6px solid ${BLUE}` }}>
-            <div className="p-6">
+           {/* TARGET BLUEPRINT (JD) */}
+           <div className="brutal-card p-6 bg-navy-900 border-navy-800">
               <div className="flex items-center gap-3 mb-4">
-                <Zap size={22} style={{ color: YELLOW, fill: YELLOW }} />
-                <span className="font-black italic uppercase text-lg tracking-tighter">AI Executive Intelligence</span>
+                 <Target className="text-brand-primary" size={18} />
+                 <h2 className="text-xs font-black uppercase tracking-widest text-white">TARGET BLUEPRINT</h2>
               </div>
-              <p className="font-black italic text-base leading-relaxed text-white uppercase tracking-tighter mb-6">{data.summary}</p>
-              <button onClick={() => setShowCover(true)}
-                style={{ background: 'white', border: `2px solid black`, boxShadow: `4px 4px 0 black` }}
-                className="flex items-center gap-2 px-6 py-3 text-black font-black italic uppercase text-xs tracking-wider hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-                <Sparkles size={15} style={{ color: BLUE }} /> GENERATE COVER LETTER
+              <div className="p-4 bg-navy-950 rounded-xl border border-navy-800 max-h-[180px] overflow-y-auto text-[10px] font-medium text-navy-400 leading-relaxed scrollbar-hide">
+                 {data.job_description || 'Job blueprint details offline.'}
+              </div>
+              <button 
+                onClick={() => navigate('/dashboard')} 
+                className="w-full mt-6 py-4 rounded-xl border border-navy-800 bg-white/5 hover:bg-white/10 text-white font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 group"
+              >
+                 <RotateCcw size={14} className="group-hover:rotate-180 transition-transform duration-500" /> RE-INITIALIZE SCAN
               </button>
-            </div>
-          </Card>
-
-          {/* Skills Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <div style={{ height: 4, background: TEAL }} />
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle size={17} style={{ color: TEAL }} />
-                  <span className="font-black italic uppercase tracking-tighter">Validated Skills</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {data.skills.match.map(s => (
-                    <span key={s} style={{ background: `${TEAL}18`, color: TEAL, border: `2px solid ${TEAL}` }}
-                      className="px-3 py-1 font-black uppercase text-[8px] tracking-widest">{s}</span>
-                  ))}
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <div style={{ height: 4, background: RED }} />
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <X size={17} style={{ color: RED }} />
-                  <span className="font-black italic uppercase tracking-tighter">Missing Gaps</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {data.skills.missing.map(s => (
-                    <span key={s} style={{ background: `${RED}18`, color: RED, border: `2px solid ${RED}` }}
-                      className="px-3 py-1 font-black uppercase text-[8px] tracking-widest">{s}</span>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          </div>
+           </div>
         </div>
 
-        {/* ══════════════ COL 3: RIGHT PANEL (3) ══════════════ */}
-        <div className="col-span-12 lg:col-span-3 space-y-4">
-
-          {/* Radar Chart — YOUR SKILLS vs MISSING SKILLS */}
-          <Card>
-            <CardHeader icon={<Activity size={17} />} label="Skill Alignment Radar" />
-            <div className="p-4">
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke={BORDER} />
-                    <PolarAngleAxis dataKey="trait" tick={{ fill: MUTED, fontSize: 8, fontWeight: 700 }} />
-                    <Tooltip
-                      contentStyle={{ background: CARD, border: `2px solid ${BORDER}`, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: 'white' }}
-                      formatter={(v, name) => [v, name === 'YOU' ? 'Your Skills' : 'Job Requirement']}
-                    />
-                    <Radar name="YOU" dataKey="YOU" stroke={TEAL} fill={TEAL} fillOpacity={0.45} strokeWidth={3} dot={{ fill: TEAL, r: 2 }} />
-                    <Radar name="REQ" dataKey="REQ" stroke={BLUE} fill={BLUE} fillOpacity={0.12} strokeWidth={2} />
-                  </RadarChart>
-                </ResponsiveContainer>
+        {/* COLUMN 2: COMMAND CENTER (CENTER) */}
+        <div className="col-span-12 lg:col-span-6 space-y-6">
+           {/* SCORE GRID */}
+           <div className="grid grid-cols-2 gap-6">
+              <div className="brutal-card p-8 bg-navy-900 border-navy-800 flex flex-col items-center justify-center relative overflow-hidden">
+                 <div className="absolute top-0 right-0 p-4 opacity-10"><Brain size={32} /></div>
+                 <div className="text-navy-500 font-black uppercase tracking-[0.4em] text-[10px] mb-4">MATCH ALIGNMENT</div>
+                 <div className="text-7xl font-black text-brand-primary italic glow-text mb-4">{score}%</div>
+                 <div className="px-5 py-2 bg-brand-yellow rounded-full text-black font-black uppercase text-[9px] italic shadow-lg -rotate-1">
+                    RANK TOP {rank}%
+                 </div>
               </div>
-              <div className="flex justify-between text-[8px] font-black uppercase tracking-widest mt-2 px-2">
-                <span style={{ color: TEAL }} className="flex items-center gap-1.5">
-                  <span style={{ width: 14, height: 3, background: TEAL, display: 'inline-block' }} /> YOUR SKILLS
-                </span>
-                <span style={{ color: BLUE }} className="flex items-center gap-1.5">
-                  JOB REQ <span style={{ width: 14, height: 3, background: BLUE, display: 'inline-block' }} />
-                </span>
+              <div className="brutal-card p-8 bg-navy-900 border-navy-800 flex flex-col items-center justify-center relative">
+                 <div className="absolute top-0 right-0 p-4 opacity-10"><Zap size={32} /></div>
+                 <div className="text-navy-500 font-black uppercase tracking-[0.4em] text-[10px] mb-4">ATS COMPATIBILITY</div>
+                 <div className="text-7xl font-black text-brand-accent italic glow-text mb-4">{atsScore}%</div>
+                 <div className="text-brand-accent font-black uppercase text-[10px] tracking-[0.4em] italic flex items-center gap-2">
+                    <CheckCircle size={14} /> GRADE {atsScore > 80 ? 'A+' : atsScore > 60 ? 'B' : 'C'}
+                 </div>
               </div>
-            </div>
-          </Card>
+           </div>
 
-          {/* Growth Blueprint */}
-          <Card>
-            <CardHeader icon={<GraduationCap size={17} />} label="Growth Blueprint" accentColor={BLUE} />
-            <div className="p-3 space-y-3 max-h-[420px] overflow-y-auto">
-              {data.skills.missing.slice(0, 4).map(skill => (
-                <GrowthCard key={skill} skill={skill} role={data.role} onQuiz={setQuizSkill} />
-              ))}
-            </div>
-          </Card>
+           {/* EXECUTIVE AI INTELLIGENCE */}
+           <div className="brutal-card p-8 bg-brand-primary/5 border-brand-primary/20 relative shadow-inner">
+              <div className="flex items-center justify-between mb-8">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-brand-primary/10 rounded-2xl text-brand-primary border border-brand-primary/20"><Sparkles size={24} /></div>
+                    <h3 className="text-xl font-black uppercase text-white tracking-tight italic">AI EXECUTIVE INTELLIGENCE</h3>
+                 </div>
+                 <button onClick={() => { navigator.clipboard.writeText(data.summary); }} className="p-2.5 rounded-xl border border-brand-primary/20 bg-navy-950 hover:bg-white/5 text-brand-primary transition-all"><Copy size={16} /></button>
+              </div>
+              <p className="text-xl md:text-2xl font-black uppercase text-white italic tracking-tighter leading-tight mb-10">{data.summary}</p>
+              <button 
+                onClick={() => setShowCover(true)} 
+                className="brutal-btn-primary w-full max-w-[300px] rounded-xl py-5 flex items-center justify-center gap-4 text-sm tracking-widest group"
+              >
+                 GENERATE COVER LETTER <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
+              </button>
+           </div>
 
-          {/* Career Pivots */}
-          <Card>
-            <CardHeader icon={<BarChart2 size={17} />} label="Recommended Career Pivots" accentColor={YELLOW} />
-            <div className="p-4 flex flex-wrap gap-3">
-              {data.pivots.map(role => (
-                <button key={role} onClick={() => setPivotRole(role)}
-                  style={{ background: `${YELLOW}15`, color: YELLOW, border: `2px solid ${YELLOW}`, boxShadow: `2px 2px 0 ${YELLOW}` }}
-                  className="px-4 py-2.5 font-black uppercase text-[8px] tracking-widest hover:bg-[#fbbf24] hover:text-black hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
-                  {role}
-                </button>
-              ))}
-            </div>
-          </Card>
-
+           {/* SKILL SPLIT MATRIX */}
+           <div className="grid grid-cols-2 gap-6">
+              <div className="brutal-card p-6 bg-navy-900 border-navy-800">
+                 <div className="flex items-center gap-3 mb-6 text-brand-accent">
+                    <CheckCircle size={18} />
+                    <h2 className="text-xs font-black uppercase tracking-widest">VALIDATED SKILLS</h2>
+                 </div>
+                 <div className="flex flex-wrap gap-1.5">
+                    {matchedSkills.map((s, i) => (
+                      <span key={i} className="px-2 py-1.5 bg-navy-950 border border-brand-accent/20 rounded-lg text-[9px] font-black uppercase tracking-tighter text-brand-accent whitespace-nowrap">{s}</span>
+                    ))}
+                 </div>
+              </div>
+              <div className="brutal-card p-6 bg-navy-900 border-navy-800">
+                 <div className="flex items-center gap-3 mb-6 text-brand-red">
+                    <AlertCircle size={18} />
+                    <h2 className="text-xs font-black uppercase tracking-widest">MISSING GAPS</h2>
+                 </div>
+                 <div className="flex flex-wrap gap-1.5">
+                    {missingSkills.map((s, i) => (
+                      <span key={i} className="px-2 py-1.5 bg-navy-950 border border-brand-red/20 rounded-lg text-[9px] font-black uppercase tracking-tighter text-brand-red whitespace-nowrap">{s}</span>
+                    ))}
+                 </div>
+              </div>
+           </div>
         </div>
+
+        {/* COLUMN 3: ANALYTICS SIDEBAR (RIGHT) */}
+        <div className="col-span-12 lg:col-span-3 space-y-6">
+           {/* RADAR CHART */}
+           <div className="brutal-card p-6 bg-navy-900 border-navy-800">
+              <div className="flex items-center gap-3 mb-6">
+                 <Activity className="text-brand-cyan" size={18} />
+                 <h2 className="text-xs font-black uppercase tracking-widest text-white">ALIGNMENT RADAR</h2>
+              </div>
+              <div className="h-[260px] -mx-4">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                       <PolarGrid stroke="#1e293b" />
+                       <PolarAngleAxis dataKey="subject" tick={(props) => {
+                          const { x, y, payload } = props;
+                          return <text x={x} y={y} textAnchor="middle" fill="#4a6080" className="text-[7px] font-bold">{payload.value}</text>;
+                       }} />
+                       <Radar name="Portfolio" dataKey="A" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.4} />
+                       <Tooltip wrapperClassName="!bg-[#0d1425] !border-white/10 !rounded-xl !p-2 !shadow-2xl" contentStyle={{ backgroundColor: 'transparent', border: 'none', fontSize: '8px', color: '#fff' }} />
+                    </RadarChart>
+                 </ResponsiveContainer>
+              </div>
+           </div>
+
+           {/* GROWTH BLUEPRINT */}
+           <div className="brutal-card p-6 bg-navy-900 border-navy-800">
+              <div className="flex items-center gap-3 mb-6">
+                 <GraduationCap className="text-brand-accent" size={18} />
+                 <h2 className="text-xs font-black uppercase tracking-widest text-white">GROWTH BLUEPRINT</h2>
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-hide">
+                 {missingSkills.map((skill, i) => (
+                   <GrowthCard key={i} skill={skill} role={data.role} onQuiz={setQuizSkill} />
+                 ))}
+              </div>
+           </div>
+
+           {/* CAREER PIVOTS */}
+           <div className="brutal-card p-6 bg-navy-950 border-white/5">
+              <div className="flex items-center gap-3 mb-6">
+                 <Rocket className="text-brand-yellow" size={18} />
+                 <h2 className="text-xs font-black uppercase tracking-widest text-white">CAREER PIVOTS</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                 {data.pivots.map((p, i) => (
+                   <div 
+                    key={i} 
+                    onClick={() => setSelectedPivot(p)}
+                    className="premium-glass p-4 rounded-xl border border-white/5 hover:border-brand-yellow/30 hover:bg-white/5 transition-all group cursor-pointer"
+                   >
+                      <div className="text-white font-black uppercase text-[10px] group-hover:text-brand-yellow transition-colors truncate">{p}</div>
+                      <div className="mt-2 flex items-center justify-between">
+                         <div className="h-0.5 flex-1 bg-white/5 rounded-full mr-3"><div className="h-full bg-brand-yellow rounded-full" style={{ width: `${80 - i*10}%` }} /></div>
+                         <ArrowRight size={12} className="text-navy-600 group-hover:text-brand-yellow transition-colors" />
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+
       </div>
     </div>
   );

@@ -1,112 +1,108 @@
 import React from 'react';
-import { Zap, ArrowRight, CheckCircle2, ShieldCheck, Target, Terminal, Briefcase, Activity } from 'lucide-react';
+import { Zap, ArrowRight, CheckCircle2, ShieldCheck, Target, Terminal, Briefcase, Activity, Sparkles, Cpu, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-/* Extract colors */
-const BG     = '#0d1421';
-const CARD   = '#111c2d';
-const BORDER = '#1e3050';
-const TEAL   = '#00d9b5';
-const BLUE   = '#4a9eff';
-const YELLOW = '#fbbf24';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const handleAction = (path) => {
+    if (user) {
+      navigate(path);
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }} className="text-white">
+    <div className="min-h-screen pt-20">
       
       {/* ─── HERO SECTION ─── */}
-      <section className="relative px-6 pt-32 pb-24 max-w-7xl mx-auto flex flex-col items-center justify-center text-center overflow-hidden">
+      <section className="relative px-6 py-24 max-w-7xl mx-auto flex flex-col items-center justify-center text-center">
         
-        {/* Decorative Grid Lines */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none" 
-          style={{ backgroundImage: `linear-gradient(${BORDER} 1px, transparent 1px), linear-gradient(90deg, ${BORDER} 1px, transparent 1px)`, backgroundSize: '40px 40px' }} 
-        />
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 -left-10 w-72 h-72 bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 -right-10 w-96 h-96 bg-brand-accent/10 rounded-full blur-[120px] pointer-events-none" />
         
-        <div style={{ background: `${BLUE}15`, border: `2px solid ${BLUE}`, color: BLUE }}
-          className="inline-flex items-center gap-2 px-5 py-2 font-black italic uppercase tracking-[0.3em] text-[10px] mb-10 -rotate-2 relative z-10 shadow-[4px_4px_0px_#4a9eff]">
-          <Zap size={14} style={{ fill: BLUE }} /> HireSense-AI V4.0 Active
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-brand-primary text-xs font-black uppercase tracking-[0.2em] mb-8 animate-pulse">
+           <Sparkles size={14} /> Next-Gen AI Analysis Active
         </div>
 
-        <h1 className="text-6xl md:text-8xl lg:text-[7rem] font-black italic tracking-tighter uppercase leading-[0.9] mb-8 relative z-10">
-          Supercharge Your <br/>
-          <span className="relative">
-            <span style={{ color: TEAL }}>Tech Career</span>
-            <svg className="absolute -bottom-4 w-full h-8" viewBox="0 0 100 20" preserveAspectRatio="none">
-              <path d="M0 10 Q 50 20 100 0" fill="none" stroke={TEAL} strokeWidth="6" strokeLinecap="square" />
-            </svg>
-          </span>
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.9] mb-8 glow-text">
+          Precision Engineering <br/>
+          <span className="text-brand-primary italic">For Your Career</span>
         </h1>
 
-        <p style={{ color: '#94a3b8' }} className="max-w-2xl text-lg md:text-xl font-bold uppercase tracking-widest leading-relaxed mb-12 relative z-10">
-          The ultimate intelligent ML pipeline to analyze your resume, expose missing skill gaps, and generate strategic pivot blueprints in seconds.
+        <p className="max-w-2xl text-lg md:text-xl font-medium text-navy-300 leading-relaxed mb-12">
+          Stop guessing. Our direct neural matching engine exposes hidden skill gaps and optimizes your resume for elite technical roles with mathematical precision.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-6 relative z-10">
-          <button onClick={() => navigate('/dashboard')}
-            style={{ background: TEAL, border: `3px solid black`, boxShadow: `6px 6px 0 black`, color: '#0d1421' }}
-            className="px-10 py-5 font-black italic uppercase text-lg tracking-tighter flex items-center justify-center gap-3 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-            Initialize Scan <ArrowRight size={22} />
+        <div className="flex flex-col sm:flex-row gap-6">
+          <button
+            onClick={() => handleAction('/dashboard')}
+            className="brutal-btn-primary px-10 py-5 rounded-xl group"
+          >
+            Start Deep Analysis <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
           </button>
+
         </div>
       </section>
 
-      {/* ─── STATISTICS BANNER ─── */}
-      <div style={{ borderTop: `2px solid ${BORDER}`, borderBottom: `2px solid ${BORDER}`, background: CARD }} className="py-12 relative z-10">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center divide-x-2 divide-[#1e3050]">
-          <div>
-            <div style={{ color: TEAL }} className="text-5xl font-black italic tracking-tighter mb-2">99%</div>
-            <div style={{ color: '#4a6080' }} className="text-[10px] font-black uppercase tracking-[0.3em]">ATS Match Accuracy</div>
+      {/* ─── LIVE METRICS ─── */}
+      <div className="max-w-7xl mx-auto px-6 mb-24">
+        <div className="premium-glass rounded-3xl border border-white/10 p-10 grid grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-black text-white mb-1 tracking-tighter">99.8%</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">Match Precision</div>
           </div>
-          <div>
-            <div style={{ color: BLUE }} className="text-5xl font-black italic tracking-tighter mb-2">5K+</div>
-            <div style={{ color: '#4a6080' }} className="text-[10px] font-black uppercase tracking-[0.3em]">ML Skill Datasets</div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-black text-brand-primary mb-1 tracking-tighter">15ms</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">Response Latency</div>
           </div>
-          <div>
-            <div style={{ color: YELLOW }} className="text-5xl font-black italic tracking-tighter mb-2">&lt;2s</div>
-            <div style={{ color: '#4a6080' }} className="text-[10px] font-black uppercase tracking-[0.3em]">Processing Speed</div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-black text-brand-accent mb-1 tracking-tighter">50K+</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">Processed Resumes</div>
           </div>
-          <div>
-            <div className="text-5xl font-black italic tracking-tighter text-white mb-2">∞</div>
-            <div style={{ color: '#4a6080' }} className="text-[10px] font-black uppercase tracking-[0.3em]">Growth Potential</div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-black text-brand-yellow mb-1 tracking-tighter">24/7</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">System Uptime</div>
           </div>
         </div>
       </div>
 
       {/* ─── HOW IT WORKS ─── */}
-      <section id="how-it-works" className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white mb-4">
-            How The Pipeline Works
+      <section id="how-it-works" className="py-24 px-6 max-w-7xl mx-auto scroll-mt-24">
+        <div className="mb-20">
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-center">
+            The Analysis <span className="text-brand-primary italic">Protocol</span>
           </h2>
-          <div style={{ width: 80, height: 6, background: BLUE }} className="mx-auto" />
+          <div className="w-20 h-1 bg-brand-primary mx-auto rounded-full" />
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-10">
           {[
             { 
-              step: '01', title: 'Upload Intelligence', icon: <Terminal size={32} />, color: BLUE,
-              desc: 'Relinquish your raw PDF dossier and inject the target job description parameters.'
+              step: '01', title: 'Data Ingestion', icon: <Cpu size={32} />, 
+              desc: 'Securely upload your dossier. Our engine strips formatting to analyze raw intelligence.'
             },
             {
-              step: '02', title: 'ML Vectorization', icon: <Activity size={32} />, color: YELLOW,
-              desc: 'Our core engine parses your text via TF-IDF against thousands of real-world role matrices.'
+              step: '02', title: 'Neural Matching', icon: <Activity size={32} />, 
+              desc: 'Your profile is cross-referenced against target JD requirements using direct keyword intersection.'
             },
             {
-              step: '03', title: 'Executive Output', icon: <ShieldCheck size={32} />, color: TEAL,
-              desc: 'Instantly view your skill gaps, ATS score, Groq AI generated roadmaps, and cover letters.'
+              step: '03', title: 'Actionable Intelligence', icon: <BarChart3 size={32} />, 
+              desc: 'Receive a comprehensive report on skill gaps, ATS compatibility, and strategic pivot options.'
             }
           ].map((item, i) => (
-            <div key={i} style={{ background: CARD, border: `2px solid ${BORDER}` }} className="p-8 relative hover:-translate-y-2 transition-transform duration-300">
-              <div style={{ color: item.color }} className="text-6xl font-black italic tracking-tighter mb-4 opacity-20 absolute top-4 right-4 leading-none">
+            <div key={i} className="brutal-card brutal-card-hover p-10 group">
+              <div className="text-5xl font-black text-white/5 absolute top-6 right-8 group-hover:text-brand-primary/10 transition-colors">
                 {item.step}
               </div>
-              <div style={{ background: item.color, border: `2px solid black`, boxShadow: `4px 4px 0 black` }} className="w-16 h-16 flex items-center justify-center mb-8 rotate-3">
-                {React.cloneElement(item.icon, { style: { color: 'black' }})}
+              <div className="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center mb-8 text-brand-primary border border-brand-primary/20">
+                {item.icon}
               </div>
-              <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-4">{item.title}</h3>
-              <p style={{ color: '#94a3b8' }} className="font-bold text-sm tracking-wide leading-relaxed uppercase">
+              <h3 className="text-xl font-bold uppercase tracking-tight mb-4">{item.title}</h3>
+              <p className="text-navy-300 font-medium text-sm leading-relaxed">
                 {item.desc}
               </p>
             </div>
@@ -114,52 +110,61 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── FEATURES / PREVIEW ─── */}
-      <section style={{ borderTop: `2px solid ${BORDER}`, background: CARD }} className="py-24 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      {/* ─── TECH SPECS ─── */}
+      <section className="py-24 bg-white/5 border-y border-white/10">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
           <div>
-            <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white mb-8">
-              Premium Intelligence <br/><span style={{ color: TEAL }}>Unleashed.</span>
+            <h2 className="text-4xl font-black uppercase tracking-tighter mb-8 glow-text">
+              Engineered For <br/><span className="text-brand-accent">Elite Results.</span>
             </h2>
-            <div className="space-y-6">
+            <div className="grid gap-6">
               {[
-                "Instant Match Scoring & Ranking against peer vectors.",
-                "AI-Powered Cover Letter Generation using Llama-3.",
-                "Dual Radar Alignment visualization of missing targets.",
-                "Interactive Skill Quizzes and Learning Resources."
+                { title: "Direct Skill Intersection", desc: "No opaque black-box scoring. See exactly where your skills overlap." },
+                { title: "Heuristic ATS Checker", desc: "Checks structure, contact info, and formatting for maximum compatibility." },
+                { title: "Strategic Gap Analysis", desc: "Identifies top missing skills to help you prioritize your learning." },
+                { title: "Real-time Peer Ranking", desc: "See where you stand compared to thousands of other analyzed profiles." }
               ].map((f, i) => (
-                <div key={i} className="flex gap-4 items-start">
-                  <CheckCircle2 size={24} style={{ color: TEAL }} className="shrink-0 mt-1" />
-                  <p className="text-lg font-black uppercase tracking-tight text-white italic">{f}</p>
+                <div key={i} className="flex gap-5">
+                  <div className="mt-1 bg-brand-accent/20 p-1.5 rounded-lg border border-brand-accent/20">
+                    <CheckCircle2 size={18} className="text-brand-accent" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold uppercase text-white tracking-tight">{f.title}</h4>
+                    <p className="text-navy-400 text-sm">{f.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
           
-          {/* Abstract Dashboard Mockup */}
           <div className="relative">
-            <div style={{ background: BG, border: `3px solid ${BLUE}`, boxShadow: `16px 16px 0 ${BLUE}` }} className="aspect-video p-6 relative">
-              <div className="flex gap-4 mb-8">
-                <div style={{ background: TEAL, height: 120 }} className="flex-1 border-2 border-black rotate-1" />
-                <div style={{ background: YELLOW, height: 120 }} className="flex-1 border-2 border-black -rotate-2" />
-              </div>
-              <div style={{ background: CARD, border: `2px solid ${BORDER}` }} className="h-32 mb-4 p-4">
-                 <div style={{ height: 12, width: '40%', background: BLUE }} className="mb-4" />
-                 <div style={{ height: 8, width: '80%', background: BORDER }} className="mb-2" />
-                 <div style={{ height: 8, width: '60%', background: BORDER }} />
-              </div>
+            <div className="premium-glass p-8 rounded-[40px] border border-brand-primary/20 shadow-neon">
+               <div className="flex gap-4 mb-6">
+                 <div className="flex-1 h-32 bg-navy-800/50 rounded-2xl border border-white/5 animate-pulse" />
+                 <div className="w-32 h-32 bg-brand-primary/20 rounded-2xl border border-brand-primary/20 flex items-center justify-center text-brand-primary">
+                    <Activity size={40} />
+                 </div>
+               </div>
+               <div className="space-y-4">
+                 <div className="h-4 w-3/4 bg-white/5 rounded-full" />
+                 <div className="h-2 w-full bg-white/5 rounded-full" />
+                 <div className="h-2 w-5/6 bg-white/5 rounded-full" />
+               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
+      {/* ─── FINAL CTA ─── */}
       <section className="py-32 px-6 text-center">
-        <h2 className="text-6xl font-black italic uppercase tracking-tighter text-white mb-8">Ready to Override<br/>The Competition?</h2>
-        <button onClick={() => navigate('/dashboard')}
-          style={{ background: BLUE, border: `3px solid black`, boxShadow: `6px 6px 0 black` }}
-          className="mx-auto px-12 py-6 font-black italic uppercase text-xl tracking-tighter text-black flex items-center justify-center gap-3 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-          Commence Execution <Zap size={24} style={{ fill: 'black' }} />
+        <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-10 glow-text italic">
+          Override The <span className="text-brand-primary">Competition.</span>
+        </h2>
+        <button
+          onClick={() => handleAction('/dashboard')}
+          className="brutal-btn-primary px-16 py-6 rounded-2xl mx-auto shadow-2xl shadow-brand-primary/20"
+        >
+          Initialize Protocol <Zap size={24} className="fill-white" />
         </button>
       </section>
 

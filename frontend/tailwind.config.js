@@ -5,27 +5,33 @@ export default {
     extend: {
       colors: {
         navy: {
-          950: '#0a0f1b',
-          900: '#111827',
+          950: '#070b14',
+          900: '#0d1425',
           800: '#1e293b',
+          700: '#334155',
         },
         brand: {
-          primary: '#2563eb',
+          primary: '#3b82f6',
           accent:  '#10b981',
-          yellow:  '#fbbf24',
+          yellow:  '#f59e0b',
           red:     '#ef4444',
+          cyan:    '#06b6d4',
+          glass:   'rgba(255, 255, 255, 0.03)',
         }
       },
       boxShadow: {
-        'brutal':    '8px 8px 0px 0px rgba(0,0,0,1)',
-        'brutal-sm': '4px 4px 0px 0px rgba(0,0,0,1)',
-        'brutal-blue':'8px 8px 0px 0px rgba(37,99,235,0.3)',
+        'premium':   '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'brutal':    '6px 6px 0px 0px rgba(0,0,0,1)',
+        'brutal-sm': '3px 3px 0px 0px rgba(0,0,0,1)',
+        'neon':      '0 0 20px rgba(59, 130, 246, 0.5)',
+        'neon-cyan': '0 0 20px rgba(6, 182, 212, 0.5)',
       },
       borderWidth: {
         '3': '3px',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif'],
       }
     }
   },

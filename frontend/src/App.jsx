@@ -12,7 +12,7 @@ import Footer from './components/layout/Footer';
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-[#4a9eff] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-navy-950 text-white font-sans selection:bg-brand-primary selection:text-navy-950 overflow-x-hidden">
       <Navbar />
       <main className="flex-grow">
         <Routes>

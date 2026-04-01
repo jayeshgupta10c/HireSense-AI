@@ -47,6 +47,65 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
 def clean_text(text: str) -> str:
     return re.sub(r"[^\w\s]", " ", text.lower())
 
+# --- IMPROVED SKILL EXTRACTION & SCORING --- #
+
+TECH_SKILLS = [
+    "PYTHON", "JAVA", "JAVASCRIPT", "C++", "C#", "RUBY", "GO", "RUST", "PHP", "SWIFT", "KOTLIN",
+    "SQL", "MONGODB", "POSTGRESQL", "MYSQL", "REDIS", "CASSANDRA", "DYNAMODB",
+    "REACT", "ANGULAR", "VUE", "NEXT.JS", "NODE.JS", "EXPRESS", "DJANGO", "FLASK", "SPRING",
+    "AWS", "AZURE", "GCP", "DOCKER", "KUBERNETES", "TERRAFORM", "JENKINS", "GIT",
+    "MACHINE LEARNING", "DEEP LEARNING", "PYTORCH", "TENSORFLOW", "SCIKIT-LEARN", "PANDAS", "NUMPY",
+    "DATA SCIENCE", "DATA ANALYSIS", "NLP", "COMPUTER VISION", "TABLEAU", "POWER BI",
+    "AGILE", "SCRUM", "REST API", "GRAPHQL", "MICROSERVICES", "CI/CD", "UNIT TESTING",
+    "HTML", "CSS", "SASS", "TAILWIND", "BOOTSTRAP", "TYPESCRIPT", "UI/UX", "FIGMA"
+]
+
+def extract_skills_robust(text: str) -> list[str]:
+    """Identify skills from a text using a predefined dictionary."""
+    found = []
+    text_upper = text.upper()
+    for skill in TECH_SKILLS:
+        # Use word boundaries to avoid partial matches (e.g., 'Go' in 'Google')
+        pattern = rf"\b{re.escape(skill)}\b"
+        if re.search(pattern, text_upper):
+            found.append(skill)
+    return found
+
+def calculate_ats_quality(text: str) -> dict:
+    """Heuristic assessment of resume formatting and content."""
+    score = 0
+    details = []
+    
+    # 1. Contact Info check
+    has_email = bool(re.search(r"[\w\.-]+@[\w\.-]+", text))
+    has_phone = bool(re.search(r"(\+?\d{1,3}[-.\s]?)?\d{10}", text))
+    has_url = "linkedin.com" in text.lower() or "github.com" in text.lower()
+    
+    if has_email: score += 10
+    if has_phone: score += 10
+    if has_url: score += 10
+    
+    # 2. Section Headings check
+    sections = ["EXPERIENCE", "EDUCATION", "SKILLS", "PROJECTS", "SUMMARY", "CERTIFICATIONS", "LANGUAGES"]
+    found_sections = [s for s in sections if s in text.upper()]
+    score += (len(found_sections) / len(sections)) * 40
+    
+    # 3. Word Count (Goldilocks zone: 400-800 words)
+    word_count = len(text.split())
+    if 400 <= word_count <= 800:
+        score += 30
+    elif 200 <= word_count < 400 or 800 < word_count <= 1200:
+        score += 15
+    else:
+        score += 5
+
+    return {
+        "score": round(score, 2),
+        "found_sections": found_sections,
+        "contact_info": {"email": has_email, "phone": has_phone, "links": has_url},
+        "word_count": word_count
+    }
+
 class MatchingEngine:
     def __init__(self, data: pd.DataFrame):
         self.data = data
@@ -64,92 +123,75 @@ class MatchingEngine:
 
             corpus = data[self._resume_col].fillna("").astype(str)
             self.vectors = self.vectorizer.fit_transform(corpus)
-            print(f"Engine ready — resume='{self._resume_col}' skills='{self._skill_col}' role='{self._role_col}'")
-
-    def _parse_skills(self, raw: str) -> list[str]:
-        sep = "|" if "|" in raw else ","
-        return [s.strip().upper() for s in raw.split(sep) if s.strip()]
+            print(f"Premium Engine ready")
 
     def match(self, resume_text: str, job_desc: str) -> dict:
-        if self.data.empty or self.vectors is None:
-            return {"error": "Dataset not loaded"}
-
-        input_text   = resume_text + " " + job_desc
-        input_vec    = self.vectorizer.transform([input_text])
+        # --- PHASE 1: SEMANTIC CONTEXT (TF-IDF) ---
+        input_vec = self.vectorizer.transform([resume_text + " " + job_desc])
         similarities = cosine_similarity(input_vec, self.vectors).flatten()
-
-        best_idx      = int(np.argmax(similarities))
-        raw_score     = float(similarities[best_idx]) * 100
-        best_row      = self.data.iloc[best_idx]
-
-        raw_skills    = str(best_row.get(self._skill_col, ""))
-        all_skills    = self._parse_skills(raw_skills)
-
-        resume_lower  = clean_text(resume_text)
-
-        matched  = [s for s in all_skills if clean_text(s) in resume_lower]
-        missing  = [s for s in all_skills if clean_text(s) not in resume_lower]
-
-        if not matched:
-            for s in all_skills:
-                for word in clean_text(s).split():
-                    if len(word) > 3 and word in resume_lower:
-                        matched.append(s)
-                        break
-
-        matched = list(dict.fromkeys(matched))[:12]
-        missing = [s for s in missing if s not in matched][:12]
-
-        # HYBRID SCORING LOGIC:
-        # We blend the TF-IDF raw_score with the actual skill-match density.
-        skill_match_ratio = len(matched) / len(all_skills) if all_skills else 0
+        best_idx = int(np.argmax(similarities))
+        semantic_score = float(similarities[best_idx]) * 100
         
-        # Weighted Score: 30% TF-IDF, 70% Skill Presence
-        hybrid_score = (raw_score * 0.3) + (skill_match_ratio * 100 * 0.7)
+        # --- PHASE 2: DIRECT SKILL MATCHING ---
+        resume_skills = set(extract_skills_robust(resume_text))
+        jd_skills     = set(extract_skills_robust(job_desc))
         
-        # Force high scores for 100% skill match
-        if skill_match_ratio >= 0.95:
-             hybrid_score = max(hybrid_score, 92 + random.uniform(0, 5))
+        # Fallback: if JD has no recognized skills, use the JD text's most common words or best match row
+        if not jd_skills:
+             best_row = self.data.iloc[best_idx]
+             jd_skills = set(s.strip().upper() for s in str(best_row.get(self._skill_col, "")).split("|") if s.strip())
+
+        matched = list(resume_skills.intersection(jd_skills))
+        missing = list(jd_skills.difference(resume_skills))
+        
+        # --- PHASE 3: ATS QUALITY CHECK ---
+        ats_data = calculate_ats_quality(resume_text)
+        
+        # --- PHASE 4: FINAL BLENDING ---
+        # Match Score: 50% Skill Alignment + 50% Semantic Context
+        skill_align_score = (len(matched) / len(jd_skills) * 100) if jd_skills else 50
+        match_score = (skill_align_score * 0.6) + (semantic_score * 0.4)
+        
+        # Ensure premium feel with realistic scaling
+        match_score = min(max(match_score, 15), 98)
         
         # ATS Score refinement
-        ats_score = min(hybrid_score + random.uniform(2, 8), 99)
-        rank      = max(round(100 - hybrid_score, 1), 0.1)
-        role      = str(best_row.get(self._role_col, "Software Professional"))
+        ats_score = ats_data["score"]
+        
+        role = str(self.data.iloc[best_idx].get(self._role_col, "Software Professional"))
 
         summary = (
-            f"YOUR RESUME SHOWS A {round(hybrid_score, 2)}% MATCH FOR THE {role.upper()} ROLE. "
-            f"{'YOU HAVE STRENGTHS IN ' + ', '.join(matched[:3]).upper() + '.' if matched else 'NO DIRECT SKILL MATCHES FOUND.'} "
-            f"{'FOCUS ON IMPROVING ' + ', '.join(missing[:3]).upper() + '.' if missing else ''}"
+            f"ANALYSIS COMPLETE: YOUR RESUME YIELDS A {round(match_score, 1)}% ALIGNMENT WITH THE TARGET REQUIREMENTS. "
+            f"CRITICAL MATCHES: {', '.join(matched[:4]).upper()}. "
+            f"{'IMMEDIATE GAP DETECTED: ' + ', '.join(missing[:3]).upper() + '.' if missing else ''}"
         ).strip()
 
         return {
-            "score":    round(hybrid_score, 2),
-            "ats_score":round(ats_score,  2),
-            "rank":     rank,
-            "role":     role,
-            "summary":  summary,
+            "score":     round(match_score, 2),
+            "ats_score": round(ats_score, 2),
+            "rank":      max(round(100 - match_score, 1), 0.5),
+            "role":      role,
+            "summary":   summary,
             "skills": {
-                "match":   matched,
-                "missing": missing
+                "match":   matched[:12],
+                "missing": missing[:12]
             },
-            "traits": build_traits(matched, missing, raw_score),
-            "pivots": suggest_pivots(role)
+            "traits": build_traits(matched, missing, match_score),
+            "pivots": suggest_pivots(role),
+            "ats_details": ats_data
         }
 
 def build_traits(matched: list, missing: list, base_score: float) -> list:
     traits = []
-    for i, s in enumerate(matched[:8]):
-        traits.append({"label": s[:10], "you": min(int(base_score) + random.randint(5, 20), 95), "req": 90})
-    for i, s in enumerate(missing[:8]):
-        traits.append({"label": s[:10], "you": random.randint(5, 25), "req": 90})
+    for s in matched[:5]:
+        traits.append({"label": s, "you": min(int(base_score) + random.randint(5, 15), 98), "req": 90})
+    for s in missing[:5]:
+        traits.append({"label": s, "you": random.randint(10, 30), "req": 90})
     return traits
 
 def suggest_pivots(role: str) -> list[str]:
-    ALL = ["DATA SCIENTIST", "SOFTWARE ENGINEER", "BUSINESS ANALYST",
-           "DEVOPS ENGINEER", "CLOUD ARCHITECT", "ML ENGINEER",
-           "FULL STACK DEVELOPER", "DATA ENGINEER"]
-    upper = role.upper()
-    return [p for p in ALL if p != upper][:5]
+    ALL = ["DATA SCIENTIST", "SOFTWARE ENGINEER", "SOLUTIONS ARCHITECT", "DEVOPS", "PRODUCT MANAGER"]
+    return [p for p in ALL if p != role.upper()][:4]
 
 df_global = load_dataset()
 engine = MatchingEngine(df_global)

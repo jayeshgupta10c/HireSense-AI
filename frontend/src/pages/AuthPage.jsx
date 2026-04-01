@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, Zap, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Zap, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-
-const BG     = '#0d1421';
-const CARD   = '#111c2d';
-const BORDER = '#1e3050';
-const TEAL   = '#00d9b5';
-const BLUE   = '#4a9eff';
-const RED    = '#e53935';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin]   = useState(true);
@@ -34,7 +27,6 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        // Login Request requires OAuth2 x-www-form-urlencoded
         const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
@@ -47,16 +39,15 @@ export default function AuthPage() {
           { email: res.data.email, role: res.data.role, name: res.data.full_name }, 
           res.data.access_token
         );
+        navigate(res.data.role === 'admin' ? '/admin' : '/dashboard');
       } else {
-        // Signup
         await api.post('/auth/signup', {
           email,
           password,
           full_name: fullName,
-          role: 'user' // Default to user
+          role: 'user'
         });
         
-        // Auto login after signup
         const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
@@ -65,85 +56,100 @@ export default function AuthPage() {
           { email: res.data.email, role: res.data.role, name: res.data.full_name }, 
           res.data.access_token
         );
+        navigate(res.data.role === 'admin' ? '/admin' : '/dashboard');
       }
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.detail || "Authentication Failed. Server might be offline.");
+      setError(err?.response?.data?.detail || "Authentication Failed. Credentials invalid.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ background: BG, minHeight: 'calc(100vh - 80px)', fontFamily: "'Inter', system-ui, sans-serif" }} className="flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-6 py-24 bg-navy-950 font-sans relative overflow-hidden">
+      
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-primary/10 blur-[120px] rounded-full pointer-events-none" />
+
       <div className="w-full max-w-md relative">
         
-        {/* Decorative elements */}
-        <div style={{ background: BLUE, border: `2px solid black`, boxShadow: `4px 4px 0 black` }} 
-          className="absolute -top-6 -left-6 w-12 h-12 flex items-center justify-center z-10 -rotate-6">
-          <Zap size={24} style={{ fill: 'black', color: 'black' }} />
+        {/* Floaties */}
+        <div className="absolute -top-12 -left-12 w-24 h-24 bg-brand-primary/20 border border-brand-primary/30 rounded-3xl -rotate-12 animate-pulse hidden md:flex items-center justify-center">
+            <Zap size={32} className="text-brand-primary fill-brand-primary/20" />
+        </div>
+        <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-brand-accent/20 border border-brand-accent/30 rounded-full animate-bounce hidden md:flex items-center justify-center" style={{ animationDuration: '4s' }}>
+            <ShieldCheck size={28} className="text-brand-accent" />
         </div>
 
-        <div style={{ background: CARD, border: `2px solid ${BORDER}`, boxShadow: `8px 8px 0 ${TEAL}` }} className="p-8 relative z-0">
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-2">
-            {isLogin ? 'Initialize' : 'Register'} <span style={{ color: TEAL }}>Identity</span>
-          </h1>
-          <p style={{ color: '#4a6080' }} className="text-xs font-bold tracking-[0.2em] uppercase mb-8">
-            {isLogin ? 'Provide clearance credentials to enter the system.' : 'Create a new dossier in the matrix.'}
-          </p>
-
-          {error && (
-             <div style={{ background: `${RED}15`, border: `2px solid ${RED}`, color: RED }} className="p-3 mb-6 font-black italic uppercase text-xs tracking-widest text-center">
-               ⚠ {error}
-             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
-              <div className="space-y-2">
-                <label style={{ color: TEAL }} className="block text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                  <User size={12} /> Legal Alias
-                </label>
-                <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                  style={{ background: BG, border: `2px solid ${BORDER}`, color: 'white' }}
-                  className="w-full p-3 font-bold text-sm outline-none focus:border-[#00d9b5] transition-colors"
-                  placeholder="JOHN DOE" />
+        <div className="brutal-card p-1 bg-navy-950 overflow-hidden relative group">
+          <div className="p-10 bg-navy-900/50 relative">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest text-navy-400 mb-6">
+                 <Sparkles size={10} className="text-brand-yellow" /> Secure Access Node
               </div>
+              <h1 className="text-4xl font-black uppercase tracking-tighter text-white italic leading-none mb-3">
+                {isLogin ? 'Establish' : 'Register'} <span className="text-brand-primary">Identity</span>
+              </h1>
+              <p className="text-navy-500 text-[10px] font-black uppercase tracking-widest italic">
+                {isLogin ? 'Provide clearance to enter matrix' : 'Initialize a new operator dossier'}
+              </p>
+            </div>
+
+            {error && (
+               <div className="p-4 mb-8 bg-brand-red/10 border border-brand-red/20 rounded-xl text-brand-red font-bold uppercase text-[10px] tracking-wider text-center italic">
+                 ⚠ {error}
+               </div>
             )}
-            
-            <div className="space-y-2">
-              <label style={{ color: TEAL }} className="block text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                <Mail size={12} /> Comms Vector (Email)
-              </label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                style={{ background: BG, border: `2px solid ${BORDER}`, color: 'white' }}
-                className="w-full p-3 font-bold text-sm outline-none focus:border-[#00d9b5] transition-colors"
-                placeholder="OPERATIVE@NETWORK.COM" />
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-brand-primary flex items-center gap-2">
+                    <User size={12} /> Full Alias
+                  </label>
+                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                    className="brutal-input w-full py-4 text-xs" required
+                    placeholder="E.G. COMMANDER SHEPARD" />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-primary flex items-center gap-2">
+                  <Mail size={12} /> Comms ID (Email)
+                </label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  className="brutal-input w-full py-4 text-xs" required
+                  placeholder="OPERATIVE@NETWORK.COM" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-primary flex items-center gap-2">
+                  <Lock size={12} /> Security Key
+                </label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  className="brutal-input w-full py-4 text-xs" required
+                  placeholder="••••••••••••" />
+              </div>
+
+              <button type="submit" disabled={loading} className="brutal-btn-primary w-full rounded-2xl py-5 text-lg mt-10">
+                {loading ? <Loader2 className="animate-spin" /> : <>{isLogin ? 'AUTHENTICATE' : 'INITIALIZE'} <ArrowRight size={20} /></>}
+              </button>
+            </form>
+
+            <div className="mt-10 pt-8 border-t border-navy-800 text-center">
+               <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }}
+                  className="text-[10px] font-black uppercase tracking-widest text-navy-500 hover:text-white transition-colors italic">
+                  {isLogin ? "No identity? Establish one here." : "Clearance verified? Return to login."}
+               </button>
             </div>
-
-            <div className="space-y-2">
-              <label style={{ color: TEAL }} className="block text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                <Lock size={12} /> Security Key
-              </label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                style={{ background: BG, border: `2px solid ${BORDER}`, color: 'white' }}
-                className="w-full p-3 font-bold text-sm outline-none focus:border-[#00d9b5] transition-colors"
-                placeholder="••••••••••••" />
-            </div>
-
-            <button type="submit" disabled={loading}
-              style={{ background: BLUE, border: `2px solid black`, boxShadow: `4px 4px 0 black`, color: 'black' }}
-              className="w-full py-4 mt-8 font-black italic uppercase tracking-tighter text-lg flex items-center justify-center gap-2 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all disabled:opacity-70 disabled:transform-none">
-              {loading ? <Loader2 className="animate-spin" /> : <>{isLogin ? 'AUTHENTICATE' : 'ESTABLISH LINK'} <ArrowRight size={20} /></>}
-            </button>
-          </form>
-
-          <div className="mt-8 text-center" style={{ borderTop: `1px solid ${BORDER}`, paddingTop: '1.5rem' }}>
-             <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                style={{ color: '#4a6080' }} className="text-xs font-black uppercase tracking-[0.2em] hover:text-white transition-colors">
-                {isLogin ? 'NO DOSSIER? REGISTER HERE.' : 'ALREADY HAVE CLEARANCE? LOGIN.'}
-             </button>
           </div>
+        </div>
+        
+        {/* Footer info */}
+        <div className="text-center mt-8 space-y-2 opacity-30 select-none">
+            <div className="text-[8px] font-black uppercase tracking-[0.5em] text-navy-600 italic">Encrypted by HireSense Core</div>
+            <div className="text-[8px] font-black uppercase tracking-[0.5em] text-navy-600">v2.0.4 Premium Protocol</div>
         </div>
       </div>
     </div>

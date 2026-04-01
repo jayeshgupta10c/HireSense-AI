@@ -1,3 +1,20 @@
+# --- Node Section ---
+node_modules/
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.npm/
+.vercel
+.eslintcache
+.stylelintcache
+.vite-inspect
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # --- Python Section ---
 __pycache__/
 *.py[cod]
@@ -7,8 +24,7 @@ __pycache__/
 env/
 venv/
 ENV/
-.env
-.venv
+.venv/
 pip-log.txt
 pip-delete-this-directory.txt
 .tox/
@@ -20,26 +36,27 @@ coverage.xml
 *.cover
 *.log
 .mypy_cache/
+.pyre/
+.ipynb_checkpoints/
 
-# --- Node Section ---
-node_modules/
-dist/
-dist-ssr/
-*.local
-.npm/
-.eslintcache
-.stylelintcache
-.vite-inspect
-.vercel
-
-# --- HireSense Specific ---
-frontend/dist/
+# --- Environment Section ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 frontend/.env
 backend/.env
+
+# --- Dataset & Data Section ---
 backend/app/data/*.pkl
 backend/app/data/*.csv
+*.csv
+*.xlsx
+*.db
+*.sqlite3
 
-# --- System & IDE ---
+# --- System & IDE Section ---
 .DS_Store
 Thumbs.db
 .vscode/
@@ -49,3 +66,9 @@ Thumbs.db
 *.njsproj
 *.sln
 *.swp
+*.bak
+*.orig
+
+# --- Docker Section ---
+docker-compose.override.yml
+.docker/
